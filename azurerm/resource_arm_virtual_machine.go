@@ -19,9 +19,9 @@ var virtualMachineResourceName = "azurerm_virtual_machine"
 
 func resourceArmVirtualMachine() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceArmVirtualMachineCreate,
+		Create: resourceArmVirtualMachineCreateUpdate,
 		Read:   resourceArmVirtualMachineRead,
-		Update: resourceArmVirtualMachineCreate,
+		Update: resourceArmVirtualMachineCreateUpdate,
 		Delete: resourceArmVirtualMachineDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
@@ -503,7 +503,7 @@ func resourceArmVirtualMachine() *schema.Resource {
 	}
 }
 
-func resourceArmVirtualMachineCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceArmVirtualMachineCreateUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ArmClient).vmClient
 	ctx := meta.(*ArmClient).StopContext
 
@@ -532,12 +532,15 @@ func resourceArmVirtualMachineCreate(d *schema.ResourceData, meta interface{}) e
 		storageProfile.ImageReference = imageRef
 	}
 
-	if _, ok := d.GetOk("storage_data_disk"); ok {
-		dataDisks, err := expandAzureRmVirtualMachineDataDisk(d)
-		if err != nil {
-			return err
+	// this should handle the data disks being attached outside of this
+	if d.IsNewResource() || d.HasChange("storage_data_disk") {
+		if _, ok := d.GetOk("storage_data_disk"); ok {
+			dataDisks, err := expandAzureRmVirtualMachineDataDisk(d)
+			if err != nil {
+				return err
+			}
+			storageProfile.DataDisks = &dataDisks
 		}
-		storageProfile.DataDisks = &dataDisks
 	}
 
 	networkProfile := expandAzureRmVirtualMachineNetworkProfile(d)
