@@ -43,6 +43,6 @@ output "network_interface_id" {
 * `mac_address` - The MAC address used by the specified network interface.
 * `private_ip_address` - The primary private ip address associated to the specified network interface.
 * `private_ip_addresses` - The list of private ip addresses associates to the specified network interface.
-* `tags` - List the tags assocatied to the specified network interface.
+* `tags` - List the tags associated to the specified network interface.
 * `virtual_machine_id` - The ID of the virtual machine that the specified network interface is attached to.
 
